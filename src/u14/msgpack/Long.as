@@ -1,5 +1,9 @@
 package u14.msgpack
 {
+	/**
+	 * @see https://github.com/dcodeIO/Long.js
+	 * @author zhangheng,Daniel Wirtz <dcode@dcode.io>
+	 */	
 	public class Long
 	{
 		/**
@@ -115,7 +119,7 @@ package u14.msgpack
 		 */
 		public static function fromBits(lowBits:int, highBits:int, unsigned:Boolean):Long{
 			return new Long(lowBits, highBits, unsigned);
-		};
+		}
 		
 		/**
 		 * @type {number}
@@ -221,7 +225,7 @@ package u14.msgpack
 				return ((this.high >>> 0) * TWO_PWR_32_DBL) + (this.low >>> 0);
 			}
 			return this.high * TWO_PWR_32_DBL + (this.low >>> 0);
-		};
+		}
 		/**
 		 * Gets the high 32 bits as a signed integer.
 		 * @returns {int} Signed high bits
@@ -279,7 +283,7 @@ package u14.msgpack
 		 */
 		public function isPositive():Boolean{
 			return this.unsigned || this.high >= 0;
-		};
+		}
 		/**
 		 * Tests if this Long's value is odd.
 		 * @returns {boolean}
@@ -287,7 +291,7 @@ package u14.msgpack
 		 */
 		public function isOdd():Boolean{
 			return (this.low & 1) === 1;
-		};
+		}
 		/**
 		 * Tests if this Long's value is even.
 		 * @returns {boolean}
@@ -295,7 +299,7 @@ package u14.msgpack
 		 */
 		public function isEven():Boolean{
 			return (this.low & 1) === 0;
-		};
+		}
 		
 		/**
 		 * Converts this Long to signed.
@@ -306,7 +310,7 @@ package u14.msgpack
 			if (!this.unsigned)
 				return this;
 			return new Long(this.low, this.high, false);
-		};
+		}
 		/**
 		 * Converts this Long to unsigned.
 		 * @returns {!Long} Unsigned long

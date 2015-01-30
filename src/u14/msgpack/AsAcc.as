@@ -51,6 +51,9 @@ package u14.msgpack
 		public static const READ_OR_WRITE:int = 3;
 		public static const READ_AND_WRITE:int = 0;
 		
+		public static var flashAcc:Boolean = false;
+//		public static var flashImport:Vector.<String> = new Vector.<String>("x","y","z","scaleX","scaleY","scaleZ","alpha");
+		
 		public static function findAccList(clss:Object, type:int=6):Array
 		{
 			var clss_Class:*=flash.utils.getDefinitionByName(getQualifiedClassName(clss));
@@ -67,16 +70,25 @@ package u14.msgpack
 					xml = xml.factory[0];
 				}
 				setTimeout(__clearCache,15000,clss,xml);
-				
 				//			var properties:XMLList = clss is Class ? xml.factory.accessor : xml.accessor;
 				var properties:XMLList = xml.accessor;
 				arr=[];
 				var node:XML;
 				for each (node in properties) {
+					if(!flashAcc){
+						if(String(node.@declaredBy).indexOf("flash.")==0){
+							continue;
+						}
+					}
 					arr.push(new AsAcc(node));
 				}
 				properties = xml.variable;
 				for each (node in properties) {
+					if(!flashAcc){
+						if(String(node.@declaredBy).indexOf("flash.")==0){
+							continue;
+						}
+					}
 					arr.push(new AsAcc(node));
 				}
 				cache[clss] = arr;

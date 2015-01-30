@@ -90,7 +90,7 @@ package u14.msgpack
 						out.writeInt(v);
 					} else {
 						out.writeByte(Code.UINT64);
-						ValueHelper.writeUint(out, v);
+						ValueHelper.writeInt64(out, v);
 					}
 				}
 			}

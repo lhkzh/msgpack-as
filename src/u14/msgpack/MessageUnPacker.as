@@ -23,6 +23,9 @@ package u14.msgpack
 			else if (Code.isFixStr(value)){
 				return unpackString(value & 0x1f, buffer);
 			} 
+			else if (Code.isFixedRaw(value)){
+				return unpackBinary(value & 0x1f, buffer);
+			} 
 			else{
 				switch (value) {
 					case Code.NIL:
@@ -71,7 +74,7 @@ package u14.msgpack
 							}
 						}
 						case Code.UINT64:{ // unsigned int 64
-							var u64:Number = ValueHelper.readUint(buffer);
+							var u64:Number = ValueHelper.readInt64(buffer);
 							return u64;
 						}
 					case Code.ARRAY16:
@@ -85,14 +88,14 @@ package u14.msgpack
 						return unpackMap(buffer.readInt(), buffer);
 						
 					case Code.STR8:
-						return unpackString(buffer.readByte(), buffer);
+						return unpackString(buffer.readByte() & 0xff, buffer);
 					case Code.STR16:
 						return unpackString(buffer.readShort() & ValueHelper.MAX_16BIT, buffer);
 					case Code.STR32:
 						return unpackString(buffer.readInt(), buffer);
 						
 					case Code.BIN8:
-						return unpackBinary(buffer.readByte(), buffer);
+						return unpackBinary(buffer.readByte() & 0xff, buffer);
 					case Code.BIN16:
 						return unpackBinary(buffer.readShort() & ValueHelper.MAX_16BIT, buffer);
 					case Code.BIN32:

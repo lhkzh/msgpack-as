@@ -37,35 +37,20 @@ package u14.msgpack
 		//	public static const MAX_31BIT:int = 0x7fffffff;
 		public static const MAX_32BIT:uint = 0xffffffff;
 		
-		public static function readUint(buffer:IDataInput):Number
-		{
-			//4294967296 = Math.pow(2, 32)
-			var h:Number = buffer.readUnsignedInt();
-			var l:Number = buffer.readUnsignedInt();
-			var num:Number = 0;
-			if(buffer.endian==Endian.BIG_ENDIAN){
-				num = h * 4294967296 + l;
-			}else{
-				num = l * 4294967296 + h;
-			}
-			return num;
-//			var a:int = buffer.readUnsignedInt();
-//			var b:int = buffer.readUnsignedInt();
-//			var little:Boolean = buffer.endian==Endian.LITTLE_ENDIAN;
-//			return Long.fromBits(little?a:b, little?b:a, false).toNumber();
-		}
 		
-		public static function writeUint(buffer:IDataOutput, num:Number):void{
-			var h:Number,l:Number;
-			if(num<4294967296){
-				h = 0;l=num;
-			}else{
-				h = int(num/4294967296);
-				l = num - h*4294967296;
-			}
-			var b:Boolean = buffer.endian==Endian.BIG_ENDIAN;
-			buffer.writeUnsignedInt(b ? h:l);
-			buffer.writeUnsignedInt(b ? l:h);
+		public static function readUint64(buffer:IDataInput):Number
+		{
+			var a:int = buffer.readUnsignedInt();
+			var b:int = buffer.readUnsignedInt();
+			var little:Boolean = buffer.endian==Endian.LITTLE_ENDIAN;
+			return Long.fromBits(little?a:b, little?b:a, false).toNumber();
+		}
+		public static function writeUint64(buffer:IDataOutput, num:Number):IDataOutput{
+			var value:Long = Long.fromNumber(num);
+			var little:Boolean = buffer.endian==Endian.LITTLE_ENDIAN;
+			buffer.writeUnsignedInt(little ? value.lowBitsUnsigned:value.highBitsUnsigned);
+			buffer.writeUnsignedInt(little ? value.highBitsUnsigned:value.lowBitsUnsigned);
+			return buffer;
 		}
 		
 		public static function writeInt64(buffer:IDataOutput, num:Number):IDataOutput{
@@ -86,15 +71,28 @@ package u14.msgpack
 		{
 			return getQualifiedClassName(v).lastIndexOf("::Vector")>0;
 		}
+		private static function isVectorType(v:String):Boolean{
+			return v.lastIndexOf("::Vector")>0;
+		}
 		public static function isObject(v:*):Boolean{
 			return v is Object && getQualifiedClassName(v)=="Object";
 		}
+		
+		public static const CLASS_NAME:String = "#$";
+		public static const CLASS_STATIC:String = "#@";
+		
 		public static function toMap(obj:Object):Object
 		{
 			var map:Object = {};
 			if(!isObject(obj)){
 				var className:String = AsAcc.getClassName(obj);
-				map["#@#"] = className;
+				map[CLASS_NAME] = className;
+				
+				if(obj is Class){
+					map[CLASS_STATIC] = true;
+					return map;
+				}
+				
 				var list:Array = AsAcc.findAccList(obj, AsAcc.READ);
 				for each(var acc:AsAcc in list){
 					map[acc.name] = obj[acc.name];
@@ -107,18 +105,28 @@ package u14.msgpack
 			}
 			return map;
 		}
+		private static function countMapKeyNum(obj:Object):int{
+			var n:int=0;
+			for(var k:* in obj){
+				n++;
+			}
+			return n;
+		}
 		public static function fromMap(obj:Object):*{
-			if(obj.hasOwnProperty("#@#")){
-				var className:String = obj["#@#"];
+			if(obj.hasOwnProperty(CLASS_NAME)){
+				var className:String = obj[CLASS_NAME];
 				if(className.length>0){
 					try{
 						var clazz:Class = AsAcc.getClass(className);
+						if(obj[CLASS_STATIC] && countMapKeyNum(obj)==2){
+							return clazz;
+						}
 						if(clazz!=null){
 							var ins:* = new clazz();
 							var list:Array = AsAcc.findAccList(clazz, AsAcc.WRITE);
 							for each(var acc:AsAcc in list){
 								if(obj.hasOwnProperty(acc.name)){
-									ins[acc.name] = obj[acc.name];
+									ins[acc.name] = castToType(obj[acc.name], acc.name);
 								}
 							}
 							return ins;
@@ -129,6 +137,24 @@ package u14.msgpack
 				}
 			}
 			return obj;
+		}
+		private static function castToType(value:*, type:String):*{
+			if(type=="Array"){
+				if(value is Array){
+					var list:Array = [];
+					for(var k:* in value){
+						list[k]= value[k];
+					}
+					return list;
+				}
+			}else if(isVectorType(type)){
+				var vector:* = new (AsAcc.getClass(type));
+				for(k in value){
+					vector[k]= value[k];
+				}
+				return vector;
+			}
+			return value;
 		}
 		private static function toBase(v:*):Object{
 			if(isSimple(v)){
