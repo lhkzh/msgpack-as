@@ -133,18 +133,21 @@ package u14.msgpack
 		}
 		protected static function unpackString(size:int, buffer:IDataInput):String {
 			if (size < 0){
-				throw new RangeError("Array to unpack too small!");
+				throw new RangeError("String to unpack too small!");
 			}
-			
+			if(size==0)return "";
 			var data:ByteArray = new ByteArray();
 			buffer.readBytes(data,0,size);
 			return new String(data);
 		}
 		protected static function unpackBinary(size:int, buffer:IDataInput):ByteArray{
 			if (size < 0){
-				throw new RangeError("Array to unpack too small!");
+				throw new RangeError("Binary to unpack too small!");
 			}
 			var data:ByteArray = new ByteArray();
+			if(size==0){
+				return data;
+			}
 			buffer.readBytes(data,0,size);
 			data.position = 0;
 			return data;

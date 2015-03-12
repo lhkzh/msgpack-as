@@ -16,10 +16,11 @@ package u14.msgpack
 		 */		
 		public static var supportXClass:Boolean = true;
 		
-		public static function pack(data:Object):ByteArray{
-			var b:ByteArray = packTo(data, new ByteArray()) as ByteArray;
-			b.position = 0;
-			return b;
+		public static function pack(data:Object, bytes:ByteArray=null):ByteArray{
+			bytes = bytes==null?new ByteArray():bytes;
+			MessagePacker.pack(data, bytes);
+			bytes.position = 0;
+			return bytes;
 		}
 		
 		public static function packTo(data:Object, toOut:IDataOutput):IDataOutput{

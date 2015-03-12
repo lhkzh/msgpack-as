@@ -75,7 +75,7 @@ package u14.msgpack
 			return v.lastIndexOf("::Vector")>0;
 		}
 		public static function isObject(v:*):Boolean{
-			return v is Object && getQualifiedClassName(v)=="Object";
+			return getQualifiedClassName(v)=="Object";
 		}
 		
 		public static const CLASS_NAME:String = "#$";
